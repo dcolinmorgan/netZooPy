@@ -90,7 +90,6 @@ class Panda(object):
             self.panda_network = self.correlation_matrix
             self.__pearson_results_data_frame()
 
-
     def __remove_missing(self):
         '''Remove genes and tfs not present in all files.'''
         if self.expression_data is not None:
