@@ -172,7 +172,7 @@ class AnalyzeMilipeed_beta(Milipeed):
         
         if computation=='cpu':
             model = sm.formula.glm(fmla,family=sm.families.Gaussian(),data=sub_data.astype(float)).fit()
-            print(fmla)
+            # print(fmla)
         elif computation=='gpu':
             mlr = LinearRegression()
             mlr.fit(population[covar], population[gene])
