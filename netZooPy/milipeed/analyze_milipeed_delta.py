@@ -28,14 +28,14 @@ import numpy as np
 import netZooPy
 from netZooPy.milipeed.milipeed import Milipeed
 from netZooPy.milipeed.analyze_milipeed_beta import AnalyzeMilipeed_beta
-AnalyzeMilipeed_beta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
-AnalyzeMilipeed_beta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
+AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
+AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
 
 
 """
 
 
-class AnalyzeMilipeed_beta(Milipeed):
+class AnalyzeMilipeed_delta(Milipeed):
     '''GLM MILIPEED links discriminated by age, sex, BMI, FEV and PY.'''
     def __init__(self,data,gene_subset=None,covar='age',factor_file='analyses/MILIPEED/milipeed_links.txt',meta='analyses/MILIPEED/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
     # def __init__(self,input_path,gene_subset,omili_nets,links_file,meta,utdir='.',):

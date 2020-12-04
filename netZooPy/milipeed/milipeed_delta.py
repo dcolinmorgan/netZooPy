@@ -31,11 +31,7 @@ class Milipeed(Panda):
                             file containing methylation beta coefficients for specific TF-gene pairs
                             ##similarly methylation file needs subject header
         ppi_file:           path to file containing STRING or FunCoup PPI (square).
-        map_file:           path to file listing TF - gene - CG in that order
-        computing:          chip for processing (cpu or gpu)
-        prevision:          in order to save memory, lower than standard precision is allowable
-        start:              subject to being with
-        end:                subject to end after (if 'agg', then lioness is not run and panda is run with methyl-motif across all gene exp samples )
+        map_file:              path to file listing TF - gene - CG in that order
 
     Outputs:
         total_milipeed_network: keep default format 'txt' to use AnalyzeMilipeed on normal memory machine
@@ -88,8 +84,7 @@ class Milipeed(Panda):
             with Timer('Loading expression data ...'):
                 self.expression_data = pd.read_csv(expression_file, sep='\t', header=0, index_col=0)
                 self.expression_genes= self.expression_data.index.tolist()
-                if end!='agg':
-                    self.expression_data=self.expression_data[e_subj]
+                self.expression_data=self.expression_data[e_subj]
                 self.expression_subjects = self.expression_data.columns
                 print('Expression matrix:', self.expression_data.shape)
 
@@ -103,10 +98,7 @@ class Milipeed(Panda):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         self.expression_mili=self.expression_data
-        if end=='agg':
-            self.end='agg'
-            end=1
-        # del self.expression_data
+        del self.expression_data
 
         
         # Run MILIPEED
@@ -119,7 +111,7 @@ class Milipeed(Panda):
     def milipeed_loop(self,b_subj,e_subj, expression_file, motif_file,methylation_file, map_file,start,end):
 
         for iii in (b_subj[start:end]):
-
+            # print(iii)
             with Timer('Creating motif ...'):
                 # Restrict methylation data
                 
@@ -148,11 +140,8 @@ class Milipeed(Panda):
 
             if self.precision=='single':
                 self.mdata=np.float32(self.mdata)
-            # if end !='agg'
-            self.processData(modeProcess='intersection', expression_file=self.expression_mili, motif_file=self.mdata, ppi_file=self.ppi_data,remove_missing=False,keep_expression_matrix=True)
-            # if end =='agg'
-                # self.processData(modeProcess='union', expression_file=self.expression_mili, motif_file=self.mdata, ppi_file=self.ppi_data,remove_missing=False,keep_expression_matrix=False)
 
+            self.processData(modeProcess='intersection', expression_file=self.expression_m, motif_file=self.mdata, ppi_file=self.ppi_data,remove_missing=False,keep_expression_matrix=True)
             pd.DataFrame(self.expression_matrix).to_csv(self.save_dir+'exp_tmp.txt',sep='\t',float_format='%1.4f',index=False,header=False)
             del self.mdata#, self.ppi_data
 
@@ -164,7 +153,7 @@ class Milipeed(Panda):
             # =====================================================================
             with Timer('Calculating coexpression network ...'):
                 
-                if self.correlation_matrix is not None and self.end!='agg': # and self.computing=='cpu':
+                if self.correlation_matrix is not None: # and self.computing=='cpu':
                     subj_exp=pd.read_csv(self.save_dir+'exp_tmp.txt',sep='\t',header=None,usecols=[list(e_subj).index(iii)+1])
 
                     subset_correlation_network = ((len(b_subj)-1) * (self.correlation_matrix) - subj_exp.values.T * subj_exp.values) /(len(b_subj)-2)
@@ -172,11 +161,8 @@ class Milipeed(Panda):
                     self.lionish_network = len(b_subj) * (self.correlation_matrix - subset_correlation_network) + subset_correlation_network
                     del subset_correlation_network
                     gc.collect()
-                    
-                elif self.correlation_matrix is not None and self.end=='agg':
-                    self.lionish_network = self.correlation_matrix
-                if self.precision=='single':
-                    self.lionish_network=np.float32(self.lionish_network)
+                    if self.precision=='single':
+                        self.lionish_network=np.float32(self.lionish_network)
 
                 if self.correlation_matrix is None:
                     self.lionish_network=np.identity(self.num_genes, dtype=int)
@@ -211,8 +197,7 @@ class Milipeed(Panda):
                     pd.DataFrame(b_subj).to_csv(self.save_dir+str(len(b_subj))+'_subject_IDs.txt',sep='\t',index=False,header=False)
             else:
                 self.total_milipeed_network=np.column_stack((self.total_milipeed_network ,np.frombuffer(np.transpose(milipeed_network).tostring(),dtype=milipeed_network.dtype)))
-            # if self.end=='agg':
-            #     break
+
         return self.total_milipeed_network
 
     def save_milipeed_results(self, file='all_milipeed_nets'):
