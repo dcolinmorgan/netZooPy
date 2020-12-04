@@ -27,7 +27,7 @@ import pandas as pd
 import numpy as np
 import netZooPy
 from netZooPy.milipeed.milipeed import Milipeed
-from netZooPy.milipeed.analyze_milipeed_beta import AnalyzeMilipeed_beta
+from netZooPy.milipeed.analyze_milipeed_delta import AnalyzeMilipeed_delta
 AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
 AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
 
@@ -79,7 +79,7 @@ class AnalyzeMilipeed_delta(Milipeed):
             
             # for count,gene in enumerate(population): ### columns are links now if above append after T worked
             
-            milipeed_analysis=Parallel(n_jobs=n_cores)(self.analysis_loop(data,head,metadata,total_links,count,out,date,computation,covar,gene_subset) for count in (total_links.index))
+            self.milipeed_analysis=Parallel(n_jobs=n_cores)(self.analysis_loop(data,head,metadata,total_links,count,out,date,computation,covar,gene_subset) for count in (total_links.index))
  
         elif data.endswith('.npy'):
             append_data=np.load(data)
@@ -158,7 +158,7 @@ class AnalyzeMilipeed_delta(Milipeed):
         # print(append_data.index)
         # tmp=total_links.iloc[countj]
         population=append_data.T
-        metadata.index=metadata['fulltopmedId']
+        # metadata.index=metadata['fulltopmedId']
 
         gene=str(total_links.loc[count].values)[2:-2]
     # for count,gene in enumerate(population):#.columns[(metadata.shape[1]):population.shape[1]]): ### columns are links now if above append after T worked
@@ -167,28 +167,11 @@ class AnalyzeMilipeed_delta(Milipeed):
 #             try:
         print(gene)
         if population.shape[1]>1:
-            append_data=metadata.merge(population[gene],left_index=True,right_index=True)
+            append_data=metadata.merge(pd.DataFrame(population[gene]),left_index=True,right_index=True)
         else:
             append_data=metadata.merge(population,left_index=True,right_index=True)
         ncov=len(covar)
-        results=iLiM(append_data,gene,computation,covar,ncov)   ## ^^ check if len(metadata) == 8
-        results.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
-#             except:
-#                 pass
-#         else:
-#             try:
-#                 results=self.iLiM(population,gene,computation,covar)   ## ^^ check if len(metadata) == 8
-#                 results.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a',header=False)
-#             except:
-#                 pass
-        if (count+1/100).is_integer():
-        # print("determining diff links for:"+ gene+", no.:"+count)
-            print(count)
-
-        return results.T
-    @delayed
-    @wrap_non_picklable_objects
-    def iLiM(self,population,gene,computation,covar):
+        # results=iLiM(append_data,gene,computation,covar,ncov)   ## ^^ check if len(metadata) == 8
         population[gene]=pd.to_numeric(population[gene])
         # fmla = (gene+"~ age+ PY+ FEV+sex")
                                                                       
@@ -214,15 +197,64 @@ class AnalyzeMilipeed_delta(Milipeed):
             mlr = LinearRegression()
             mlr.fit(population[covar], population[gene])
         results=pd.DataFrame(self.results_summary_to_dataframe(model,gene))  
-        return results
-    @delayed
-    @wrap_non_picklable_objects
-    def results_summary_to_dataframe(self,results,gene):
+        # return results
         pvals = results.tvalues
         coeff = results.params
         results_df = pd.DataFrame({gene+"pvals":pvals,gene+"coeff":coeff,})
         results_df = results_df[[gene+"coeff",gene+"pvals"]]
-        return results_df
+        # return results_df
+
+        results_df.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+#             except:
+#                 pass
+#         else:
+#             try:
+#                 results=self.iLiM(population,gene,computation,covar)   ## ^^ check if len(metadata) == 8
+#                 results.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a',header=False)
+#             except:
+#                 pass
+        if (count+1/100).is_integer():
+        # print("determining diff links for:"+ gene+", no.:"+count)
+            print(count)
+
+        return results_df.T
+    # @delayed
+    # @wrap_non_picklable_objects
+    # def iLiM(self,population,gene,computation,covar):
+    #     population[gene]=pd.to_numeric(population[gene])
+    #     # fmla = (gene+"~ age+ PY+ FEV+sex")
+                                                                      
+
+    #     # fmla = (str(gene) + "~"+metadata.columns[1]+"+"+metadata.columns[2]+"+"+metadata.columns[3]+"+"+metadata.columns[4]+"+"+metadata.columns[5]) ##restrict metadata input to those for use in GLM
+    #     ## ^^ make this fill automagically (below)
+    #     if type(covar) is list:
+    #         fmla = (str(gene)) + "~"+'+'.join(covar)#.split(','))
+    #         covar=covar[0:ncov]
+    #         covar.append(gene)
+    #         sub_data=population[covar]
+    #     else:
+    #         fmla = (str(gene)) + "~"+'+'.join(covar.split(','))
+    #         sub_data=population[covar.split(',')+[gene]]
+    #     sub_data.astype(float)
+    #     # model = sm.formula.glm(fmla, family=sm.families.Gaussian(),data=population[gene]).fit()
+    #     # model = sm.formula.glm(fmla, family=sm.families.Gaussian(),data=population[['age','sex','BMI','FEV1','packyears',gene]]).fit()
+        
+    #     if computation=='cpu':
+    #         model = sm.formula.glm(fmla,family=sm.families.Gaussian(),data=sub_data.astype(float)).fit()
+    #         # print(fmla)
+    #     elif computation=='gpu':
+    #         mlr = LinearRegression()
+    #         mlr.fit(population[covar], population[gene])
+    #     results=pd.DataFrame(self.results_summary_to_dataframe(model,gene))  
+    #     return results
+    # @delayed
+    # @wrap_non_picklable_objects
+    # def results_summary_to_dataframe(self,results,gene):
+    #     pvals = results.tvalues
+    #     coeff = results.params
+    #     results_df = pd.DataFrame({gene+"pvals":pvals,gene+"coeff":coeff,})
+    #     results_df = results_df[[gene+"coeff",gene+"pvals"]]
+    #     return results_df
 
 
     # def importAnalysis():
