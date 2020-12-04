@@ -106,6 +106,8 @@ class Milipeed(Panda):
         if end=='agg':
             self.end='agg'
             end=1
+        else:
+            self.end=end
         # del self.expression_data
 
         
