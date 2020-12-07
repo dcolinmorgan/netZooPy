@@ -23,13 +23,14 @@ from joblib import Parallel, delayed
 from joblib import wrap_non_picklable_objects
 
 """
+###attempt to parallelize this workflow
 import pandas as pd
 import numpy as np
 import netZooPy
 from netZooPy.milipeed.milipeed import Milipeed
 from netZooPy.milipeed.analyze_milipeed_gamma import AnalyzeMilipeed_gamma
-# AnalyzeMilipeed_gamma('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
-AnalyzeMilipeed_gamma('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
+# AnalyzeMilipeed_gamma('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_par_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
+AnalyzeMilipeed_gamma('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_par_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
 
 
 """
@@ -65,7 +66,7 @@ class AnalyzeMilipeed_gamma(Milipeed):
             append_data = pd.DataFrame(data_file)
         elif data_file.endswith('.txt'):
             head=pd.DataFrame(pd.read_csv(data_file,sep='\t',index_col=None,skiprows=0,nrows=0))
-            
+            ncov=len(covar)
 
                 # append_data.index=metadata.index
         #         append_data.columns=tmp['gene'] #total_links.iloc[count]
@@ -74,8 +75,8 @@ class AnalyzeMilipeed_gamma(Milipeed):
                 
                 # del append_data, tmp, tmp1
                 # milipeed_analysis= runInParallel(__analysis_loop(i),)
-            self.milipeed_analysis=Parallel(n_jobs=n_cores)(self.analysis_loop(data_file,head,metadata,total_links,count,out,date,computation,covar,gene_subset) for count in (total_links.index))
-
+            self.milipeed_analysis=Parallel(n_jobs=n_cores)(self.analysis_loop(data_file,head,metadata,total_links,count,out,date,computation,covar,ncov) for count in (total_links.index))
+                                                                            # data_file,head,metadata,total_links,count,out,date,computation,covar,ncov
                 # self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
 
         elif data.endswith('.npy'):
@@ -142,7 +143,7 @@ class AnalyzeMilipeed_gamma(Milipeed):
             # statsmodels.tools.sm_exceptions.PerfectSeparationError: #: Perfect separation detected, results not available
     @delayed
     @wrap_non_picklable_objects
-    def analysis_loop(self,data_file,head,metadata,total_links,count,out,date,computation,covar,gene_subset):
+    def analysis_loop(self,data_file,head,metadata,total_links,count,out,date,computation,covar,ncov):
         # count=1
         # gene=population.columns[8]
         # results=LM(population,gene)
@@ -166,7 +167,7 @@ class AnalyzeMilipeed_gamma(Milipeed):
         population=append_data.T
         population.columns=tmp
         metadata.index=metadata['fulltopmedId']
-
+        total_links=total_links.replace('.','')
         gene=str(total_links.loc[count].values)[2:-2]
     # for count,gene in enumerate(population):#.columns[(metadata.shape[1]):population.shape[1]]): ### columns are links now if above append after T worked
 
@@ -177,13 +178,13 @@ class AnalyzeMilipeed_gamma(Milipeed):
             append_data=metadata.merge(population[gene],left_index=True,right_index=True)
         else:
             append_data=metadata.merge(population,left_index=True,right_index=True)
-        ncov=len(covar)
-        results=self.iLiM(append_data,gene,computation,covar,ncov)   ## ^^ check if len(metadata) == 8
+        # ncov=len(covar)
+        # results=self.iLiM(append_data,gene,computation,covar,ncov)   ## ^^ check if len(metadata) == 8
         
 # @delayed
 # @wrap_non_picklable_objects
 # def iLiM(self,population,gene,computation,covar,ncov):
-        population[gene]=pd.to_numeric(population[gene])
+        append_data[gene]=pd.to_numeric(append_data[gene])
         # fmla = (gene+"~ age+ PY+ FEV+sex")
                                                                       
 
@@ -193,10 +194,10 @@ class AnalyzeMilipeed_gamma(Milipeed):
             fmla = (str(gene)) + "~"+'+'.join(covar)#.split(','))
             covar=covar[0:ncov]
             covar.append(gene)
-            sub_data=population[covar]
+            sub_data=append_data[covar]
         else:
             fmla = (str(gene)) + "~"+'+'.join(covar.split(','))
-            sub_data=population[covar.split(',')+[gene]]
+            sub_data=append_data[covar.split(',')+[gene]]
         sub_data.astype(float)
         # model = sm.formula.glm(fmla, family=sm.families.Gaussian(),data=population[gene]).fit()
         # model = sm.formula.glm(fmla, family=sm.families.Gaussian(),data=population[['age','sex','BMI','FEV1','packyears',gene]]).fit()
@@ -206,18 +207,19 @@ class AnalyzeMilipeed_gamma(Milipeed):
             # print(fmla)
         elif computation=='gpu':
             mlr = LinearRegression()
-            mlr.fit(population[covar], population[gene])
-        results=pd.DataFrame(self.results_summary_to_dataframe(model,gene))  
+            mlr.fit(append_data[covar], append_data[gene])
+        # results=pd.DataFrame(self.results_summary_to_dataframe(model,gene))  
         # return results
 # @delayed
 # @wrap_non_picklable_objects
 # def results_summary_to_dataframe(self,results,gene):
-        pvals = results.tvalues
-        coeff = results.params
-        results_df = pd.DataFrame({gene+"pvals":pvals,gene+"coeff":coeff,})
+        # pvals = model.tvalues
+        # coeff = model.params
+        results_df = pd.DataFrame({gene+"pvals":model.tvalues,gene+"coeff":model.params,})
         results_df = results_df[[gene+"coeff",gene+"pvals"]]
         # return results_df
-        results_df.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+        # print(results_df)
+        np.transpose(results_df).to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
 #             except:
 #                 pass
 #         else:
@@ -230,7 +232,7 @@ class AnalyzeMilipeed_gamma(Milipeed):
         # print("determining diff links for:"+ gene+", no.:"+count)
             print(count)
 
-        return results.T
+        return np.transpose(results)
 
     # def importAnalysis():
     #     analysis=pd.read_csv('/udd/redmo/analyses/SPIDER/lioness_output2mili_analysis08.03.2020.txt',sep='\t',skiprows=range(3,2500,3),header=0,index_col=0)

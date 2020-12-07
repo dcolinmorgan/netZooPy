@@ -15,13 +15,6 @@ from datetime import datetime, date
 import statsmodels.api as sm
 # from cuml import
 import shutil
-
-# import traceback
-# from joblib.externals.loky import set_loky_pickler
-# from joblib import parallel_backend
-# from joblib import Parallel, delayed
-# from joblib import wrap_non_picklable_objects
-
 """
 import pandas as pd
 import numpy as np
@@ -58,6 +51,7 @@ class AnalyzeMilipeed_beta(Milipeed):
         #     total_links['TF']=''
             total_links['gene']=total_links['gene'].str.replace('-','')
             tmp=total_links.replace('.','')
+            total_links=pd.DataFrame(total_links['gene'].str.replace('.',''))#.tolist()
 
         append_data = pd.DataFrame()
 
