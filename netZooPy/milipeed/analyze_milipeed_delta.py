@@ -29,8 +29,8 @@ import numpy as np
 import netZooPy
 from netZooPy.milipeed.milipeed import Milipeed
 from netZooPy.milipeed.analyze_milipeed_delta import AnalyzeMilipeed_delta
-# AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
-AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
+AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
+# AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
 
 
 """
@@ -183,9 +183,9 @@ class AnalyzeMilipeed_delta(Milipeed):
             elif computation=='gpu':
                 mlr = LinearRegression()
                 mlr.fit(append_data[covar], append_data[gene])
-            results = pd.DataFrame({gene+"pvals":model.tvalues,gene+"coeff":model.params,})
-            results = results[[gene+"pvals",gene+"coeff"]]
-            results_df = results_df.append(np.transpose(results[[gene+"pvals",gene+"coeff"]]))
+            results = pd.DataFrame({gene+"coeff":model.tvalues,gene+"pvals":model.params,})
+            results = results[[gene+"coeff",gene+"pvals"]]
+            results_df = results_df.append(np.transpose(results[[gene+"coeff",gene+"pvals"]]))
             if (count/10000).is_integer():
                 print(count/len(total_links))
         return results_df#.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
