@@ -152,7 +152,9 @@ class AnalyzeMilipeed_delta(Milipeed):
         end=int((len(total_links)/n_cores)*(count+1))
         append_data=pd.DataFrame(pd.read_csv(data_file,sep='\t',index_col=0,header=0,skiprows=start,nrows=end))
         append_data.columns=head.columns
-        
+        dd=list(np.copy(covar))
+        dd.append('Intercept')
+        results_df = pd.DataFrame(columns=dd)
 
         tmp=total_links.iloc[start:end]
         population=append_data.T
@@ -181,9 +183,9 @@ class AnalyzeMilipeed_delta(Milipeed):
             elif computation=='gpu':
                 mlr = LinearRegression()
                 mlr.fit(append_data[covar], append_data[gene])
-            results_df = pd.DataFrame({gene+"pvals":model.tvalues,gene+"coeff":model.params,})
-            results_df = results_df[[gene+"coeff",gene+"pvals"]]
-            results_df = results_df.append(np.transpose(results_df[[gene+"coeff",gene+"pvals"]]))
+            results = pd.DataFrame({gene+"pvals":model.tvalues,gene+"coeff":model.params,})
+            results = results[[gene+"coeff",gene+"pvals"]]
+            results_df = results_df.append(np.transpose(results[[gene+"coeff",gene+"pvals"]]))
             if (count/10000).is_integer():
                 print(count/len(total_links))
         return results_df#.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
