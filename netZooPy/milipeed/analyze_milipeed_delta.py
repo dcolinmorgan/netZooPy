@@ -29,8 +29,8 @@ import numpy as np
 import netZooPy
 from netZooPy.milipeed.milipeed import Milipeed
 from netZooPy.milipeed.analyze_milipeed_delta import AnalyzeMilipeed_delta
-AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
-# AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
+# AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
+AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
 
 
 """
@@ -164,7 +164,7 @@ class AnalyzeMilipeed_delta(Milipeed):
         append_data=metadata.merge(population,left_index=True,right_index=True)
         del append_data['fulltopmedId'], append_data['topmedId'], append_data['patid'], append_data['Project']
 
-        for count,gene in enumerate(total_links['gene']): #tmp['gene']:
+        for count,gene in enumerate(tmp['gene']): #tmp['gene']:
             if type(covar) is list:
                 fmla = (str(gene)) + "~"+'+'.join(covar)#.split(','))
                 cc=list(np.copy(covar))
