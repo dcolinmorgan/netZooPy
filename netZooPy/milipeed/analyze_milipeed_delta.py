@@ -29,8 +29,9 @@ import numpy as np
 import netZooPy
 from netZooPy.milipeed.milipeed import Milipeed
 from netZooPy.milipeed.analyze_milipeed_delta import AnalyzeMilipeed_delta
-# AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
-AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
+# AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
+AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
+# AnalyzeMilipeed_delta('data/LTRC/test.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/test_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_test/',gene_subset=None,computation='cpu',n_cores=1)
 
 
 """
@@ -77,8 +78,9 @@ class AnalyzeMilipeed_delta(Milipeed):
                 # del append_data, tmp, tmp1
                 # milipeed_analysis= runInParallel(__analysis_loop(i),)
             operations=list(range((n_cores)))
-            self.milipeed_analysis=Parallel(n_jobs=n_cores)(self.analysis_loop(data_file,head,metadata,total_links,count,out,date,computation,covar,ncov,n_cores) for count in operations)
-                                                                            # data_file,head,metadata,total_links,count,out,date,computation,covar,ncov
+            results_df=Parallel(n_jobs=n_cores)(self.analysis_loop(data_file,head,metadata,total_links,count,out,date,computation,covar,ncov,n_cores) for count in operations)
+            pd.DataFrame(results_df).to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+            # return results_df                                           # data_file,head,metadata,total_links,count,out,date,computation,covar,ncov
                 # self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
 
         elif data.endswith('.npy'):
@@ -124,7 +126,7 @@ class AnalyzeMilipeed_delta(Milipeed):
         #     subnet=append_data.merge(gene_sub,left_on=append_data.index,right_on='gene')
         #     append_data=pd.concat([append_data,pd.DataFrame(subnet[0])],sort=True,axis=1)
         #     del subnet
-        del data
+        # del data
 
         if not data.endswith('.txt'):
 
@@ -143,7 +145,7 @@ class AnalyzeMilipeed_delta(Milipeed):
 
             self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
             # statsmodels.tools.sm_exceptions.PerfectSeparationError: #: Perfect separation detected, results not available
-            results_df.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+            pd.DataFrame(results_df).to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
 
     @delayed
     @wrap_non_picklable_objects
@@ -164,7 +166,7 @@ class AnalyzeMilipeed_delta(Milipeed):
         append_data=metadata.merge(population,left_index=True,right_index=True)
         del append_data['fulltopmedId'], append_data['topmedId'], append_data['patid'], append_data['Project']
 
-        for count,gene in enumerate(tmp['gene']): #tmp['gene']:
+        for counts,gene in enumerate(tmp['gene']): #tmp['gene']:
             if type(covar) is list:
                 fmla = (str(gene)) + "~"+'+'.join(covar)#.split(','))
                 cc=list(np.copy(covar))
@@ -186,8 +188,10 @@ class AnalyzeMilipeed_delta(Milipeed):
             results = pd.DataFrame({gene+"coeff":model.tvalues,gene+"pvals":model.params,})
             results = results[[gene+"coeff",gene+"pvals"]]
             results_df = results_df.append(np.transpose(results[[gene+"coeff",gene+"pvals"]]))
-            if (count/10000).is_integer():
-                print(count/len(total_links))
+            if (counts/10000).is_integer():
+                print(counts/len(total_links))
+        del append_data, population
+
         return results_df#.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
 
 
