@@ -4,7 +4,7 @@ import math
 import time
 import pandas as pd
 from scipy.stats import zscore
-from .timer import Timer
+# from .timer import Timer
 import numpy as np
 
 class Panda(object):
@@ -192,6 +192,7 @@ class Panda(object):
         return normalized_matrix
 
     def processData(self, modeProcess, motif_file, expression_file, ppi_file, remove_missing, keep_expression_matrix):
+<<<<<<< HEAD
         """ 
         Description:
             Processes data files into data matrices.
@@ -205,6 +206,8 @@ class Panda(object):
             remove_missing  : Removes the gens and TFs that are not present in one of the priors. Works only if modeProcess='legacy'.
             keep_expression_matrix: Keeps the input expression matrix in the result Panda object.
         """
+=======
+>>>>>>> f7ad4dc (add milipeed_beta)
         # if modeProcess=="legacy":
         # =====================================================================
         # Data loading
@@ -217,6 +220,7 @@ class Panda(object):
                 # self.num_tfs = len(self.unique_tfs)
                 # print('Unique TFs:', self.num_tfs)
         elif type(motif_file) is not str:
+<<<<<<< HEAD
             if motif_file is None:
                 self.motif_data  = None
                 self.motif_genes = []
@@ -228,6 +232,17 @@ class Panda(object):
             # self.num_tfs = len(self.unique_tfs)
             # print('Unique TFs:', self.num_tfs)
 
+=======
+            self.motif_data = pd.DataFrame(motif_file.values)#pd.read_csv(motif_file, sep='\t', header=None)
+            self.motif_tfs = sorted(set(subMtf['source']))
+            self.motif_genes = sorted(set(subMtf['source']))
+            # self.num_tfs = len(self.unique_tfs)
+            # print('Unique TFs:', self.num_tfs)
+
+        else:
+            self.motif_data = None
+
+>>>>>>> f7ad4dc (add milipeed_beta)
         if type(expression_file) is str:
             with Timer('Loading expression data ...'):
                 self.expression_data = pd.read_csv(expression_file, sep='\t', header=None, index_col=0)
@@ -235,6 +250,7 @@ class Panda(object):
                 # self.num_genes = len(self.gene_names)
                 # print('Expression matrix:', self.expression_data.shape)
         elif type(expression_file) is not str:
+<<<<<<< HEAD
             if expression_file is not None:
                 self.expression_data = expression_file #pd.read_csv(expression_file, sep='\t', header=None, index_col=0)
                 self.expression_genes = self.expression_data.index.tolist()
@@ -246,10 +262,22 @@ class Panda(object):
                 self.num_genes = len(self.gene_names)
                 self.expression_data = None #pd.DataFrame(np.identity(self.num_genes, dtype=int))
                 print('No Expression data given: correlation matrix will be an identity matrix of size', len(self.motif_genes))
+=======
+            self.expression_data = expression_file #pd.read_csv(expression_file, sep='\t', header=None, index_col=0)
+            self.expression_genes = self.expression_data.index.tolist()
+            # self.num_genes = len(self.gene_names)
+            # print('Expression matrix:', self.expression_data.shape)
+        else:
+            self.gene_names = list(set(self.motif_data[1]))
+            self.num_genes = len(self.gene_names)
+            self.expression_data = None #pd.DataFrame(np.identity(self.num_genes, dtype=int))
+            print('No Expression data given: correlation matrix will be an identity matrix of size', self.num_genes)
+>>>>>>> f7ad4dc (add milipeed_beta)
 
         if type(ppi_file) is str:
             with Timer('Loading PPI data ...'):
                 self.ppi_data = pd.read_csv(ppi_file, sep='\t', header=None)
+<<<<<<< HEAD
                 self.ppi_tfs  = sorted(set(pd.concat([self.ppi_data[0],self.ppi_data[1]])))
                 print('Number of PPIs:', self.ppi_data.shape[0])
         elif type(ppi_file) is not str:
@@ -272,17 +300,41 @@ class Panda(object):
             else:
                 self.unique_tfs = self.motif_tfs#sorted( np.unique(self.ppi_tfs     +  self.motif_tfs ))
 
+=======
+                self.ppi_tfs  = sorted(set(self.ppi_data[0]))
+                print('Number of PPIs:', self.ppi_data.shape[0])
+        elif type(ppi_file) is not str:
+            self.ppi_data = ppi_file#pd.read_csv(ppi_file, sep='\t', header=None)
+            self.ppi_tfs  = sorted(set(self.ppi_data[0]))
+            print('Number of PPIs:', self.ppi_data.shape[0])
+        else:
+            print('No PPI data given: ppi matrix will be an identity matrix of size', self.num_tfs)
+            self.ppi_data = None
+
+        if remove_missing and motif_file is not None:
+            self.__remove_missing()
+        
+        if modeProcess=="legacy":
+            self.gene_names = expression_genes#sorted( np.unique(self.motif_genes +  self.expression_genes ))
+            self.unique_tfs = motif_tfs#sorted( np.unique(self.ppi_tfs     +  self.motif_tfs ))
+
+>>>>>>> f7ad4dc (add milipeed_beta)
         elif modeProcess=="union":
             self.gene_names = sorted( np.unique(self.motif_genes +  self.expression_genes ))
             self.unique_tfs = sorted( np.unique(self.ppi_tfs     +  self.motif_tfs ))
 
         elif modeProcess=="intersection":
+<<<<<<< HEAD
             if motif_file is None:
                 self.gene_names = sorted( np.unique(self.expression_genes ))
                 self.unique_tfs = sorted( np.unique(self.ppi_tfs ))
             else:
                 self.gene_names = sorted(np.unique( list(set(self.motif_genes).intersection(set(self.expression_genes))) ))
                 self.unique_tfs = sorted(np.unique( list(set(self.ppi_tfs).intersection(set(self.motif_tfs)) )))
+=======
+            self.gene_names = sorted(np.unique( list(set(self.motif_genes).intersection(set(self.expression_genes))) ))
+            self.unique_tfs = sorted(np.unique( list(set(self.ppi_tfs).intersection(set(self.motif_tfs)) )))
+>>>>>>> f7ad4dc (add milipeed_beta)
         
         self.num_genes  = len(self.gene_names)
         self.num_tfs    = len(self.unique_tfs)
@@ -290,12 +342,15 @@ class Panda(object):
         # Auxiliary dicts
         gene2idx = {x: i for i,x in enumerate(self.gene_names)}
         tf2idx = {x: i for i,x in enumerate(self.unique_tfs)}
+<<<<<<< HEAD
         if (modeProcess=="union" or modeProcess=="intersection") and (self.expression_data is not None) and (self.num_genes!=0):
             # Initialize data & Populate gene expression
             self.expression = np.zeros((self.num_genes, self.expression_data.shape[1]))
             idx_geneEx = [gene2idx.get(x, 0) for x in self.expression_genes]
             self.expression[idx_geneEx,:] = self.expression_data.values
             self.expression_data=pd.DataFrame(data=self.expression)
+=======
+>>>>>>> f7ad4dc (add milipeed_beta)
 
         # =====================================================================
         # Network construction
@@ -311,10 +366,14 @@ class Panda(object):
 
         # Clean up useless variables to release memory
         if keep_expression_matrix:
+<<<<<<< HEAD
             if self.expression_data is not None:
                 self.expression_matrix = self.expression_data.values
             else:
                 self.expression_matrix = None
+=======
+            self.expression_matrix = self.expression_data.values
+>>>>>>> f7ad4dc (add milipeed_beta)
 
         if self.motif_data is None:
             print('Returning the correlation matrix of expression data in <Panda_obj>.correlation_matrix')
@@ -325,6 +384,10 @@ class Panda(object):
             self.__pearson_results_data_frame()
             return
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> f7ad4dc (add milipeed_beta)
         with Timer('Creating motif network ...'):
             self.motif_matrix_unnormalized = np.zeros((self.num_tfs, self.num_genes))
             idx_tfs = [tf2idx.get(x, 0) for x in self.motif_data[0]]
