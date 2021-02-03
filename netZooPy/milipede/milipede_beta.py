@@ -7,7 +7,7 @@ import numpy as np
 from scipy.stats import zscore
 from .timer import Timer
 
-class Milipeed(object):
+class milipede(object):
     """ 
     Description:
        Using PANDA to infer gene regulatory network.

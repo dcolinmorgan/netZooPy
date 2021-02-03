@@ -10,17 +10,17 @@ from netZooPy.panda.panda import Panda
 # import cupy as cp
 # xp=np.get_array_module
 
-class Milipeed(Panda):
+class milipede(Panda):
     """
     Description:
-       Using MILIPEED to infer single-sample gene regulatory networks.
+       Using milipede to infer single-sample gene regulatory networks.
 
     Usage:
         1. Reading in input data (expression data, motif prior, methylation data, TF PPI data)
         2. Computing lioness-style coexpression and motif network
         3. Normalizing networks
         4. Running PANDA algorithm
-        5. Writing out MILIPEED networks
+        5. Writing out milipede networks
 
 
     Inputs:
@@ -31,10 +31,14 @@ class Milipeed(Panda):
                             file containing methylation beta coefficients for specific TF-gene pairs
                             ##similarly methylation file needs subject header
         ppi_file:           path to file containing STRING or FunCoup PPI (square).
-        map_file:              path to file listing TF - gene - CG in that order
+        map_file:           path to file listing TF - gene - CG in that order
+        computing:          chip for processing (cpu or gpu)
+        prevision:          in order to save memory, lower than standard precision is allowable
+        start:              subject to being with
+        end:                subject to end after (if 'agg', then lioness is not run and panda is run with methyl-motif across all gene exp samples )
 
     Outputs:
-        total_milipeed_network: keep default format 'txt' to use AnalyzeMilipeed on normal memory machine
+        total_milipede_network: keep default format 'txt' to use Analyzemilipede on normal memory machine
 
     Authors: 
        dcolinmorgan, bmarouen,
@@ -42,7 +46,7 @@ class Milipeed(Panda):
 ######
 ## add full motif to complement non-methylation-characterized TF-gene
 ######
-    def __init__(self, expression_file, methylation_file,ppi_file,motif_file=None, map_file='tests/milipeed/MotifPrior_CGmap.txt', computing='cpu',precision='double', start=1, end=None,save_dir='milipeed_output/', save_fmt='txt'):
+    def __init__(self, expression_file, methylation_file,ppi_file,motif_file=None, map_file='tests/milipede/MotifPrior_CGmap.txt', computing='cpu',precision='double', start=1, end=None,save_dir='milipede_output/', save_fmt='txt'):
         # =====================================================================
         # Data loading
         # =====================================================================
@@ -84,13 +88,14 @@ class Milipeed(Panda):
             with Timer('Loading expression data ...'):
                 self.expression_data = pd.read_csv(expression_file, sep='\t', header=0, index_col=0)
                 self.expression_genes= self.expression_data.index.tolist()
-                self.expression_data=self.expression_data[e_subj]
+                if end!='agg':
+                    self.expression_data=self.expression_data[e_subj]
                 self.expression_subjects = self.expression_data.columns
                 print('Expression matrix:', self.expression_data.shape)
 
         self.computing=computing
         self.precision=precision
-        self.total_milipeed_network = None
+        self.total_milipede_network = None
 
         # Create the output folder if not exists
         self.save_dir = save_dir
@@ -98,20 +103,25 @@ class Milipeed(Panda):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         self.expression_mili=self.expression_data
-        del self.expression_data
+        if end=='agg':
+            self.end='agg'
+            end=1
+        else:
+            self.end=end
+        # del self.expression_data
 
         
-        # Run MILIPEED
-        self.total_milipeed_network = self.milipeed_loop(b_subj,e_subj,expression_file,motif_file,methylation_file, map_file,start,end)
+        # Run milipede
+        self.total_milipede_network = self.milipede_loop(b_subj,e_subj,expression_file,motif_file,methylation_file, map_file,start,end)
 
         # # create result data frame
-        self.export_milipeed_results = pd.DataFrame(self.total_milipeed_network)
+        self.export_milipede_results = pd.DataFrame(self.total_milipede_network)
 
 ###
-    def milipeed_loop(self,b_subj,e_subj, expression_file, motif_file,methylation_file, map_file,start,end):
+    def milipede_loop(self,b_subj,e_subj, expression_file, motif_file,methylation_file, map_file,start,end):
 
         for iii in (b_subj[start:end]):
-            # print(iii)
+
             with Timer('Creating motif ...'):
                 # Restrict methylation data
                 
@@ -140,20 +150,23 @@ class Milipeed(Panda):
 
             if self.precision=='single':
                 self.mdata=np.float32(self.mdata)
+            # if end !='agg'
+            self.processData(modeProcess='intersection', expression_file=self.expression_mili, motif_file=self.mdata, ppi_file=self.ppi_data,remove_missing=False,keep_expression_matrix=True)
+            # if end =='agg'
+                # self.processData(modeProcess='union', expression_file=self.expression_mili, motif_file=self.mdata, ppi_file=self.ppi_data,remove_missing=False,keep_expression_matrix=False)
 
-            self.processData(modeProcess='intersection', expression_file=self.expression_m, motif_file=self.mdata, ppi_file=self.ppi_data,remove_missing=False,keep_expression_matrix=True)
             pd.DataFrame(self.expression_matrix).to_csv(self.save_dir+'exp_tmp.txt',sep='\t',float_format='%1.4f',index=False,header=False)
             del self.mdata#, self.ppi_data
 
             gc.collect()
-            print("Running MILIPEED for subject %s:" % (iii))
+            print("Running milipede for subject %s:" % (iii))
             idx = [x for x in b_subj if x != iii] # all samples except iii
             # =====================================================================
             # Network construction
             # =====================================================================
             with Timer('Calculating coexpression network ...'):
                 
-                if self.correlation_matrix is not None: # and self.computing=='cpu':
+                if self.correlation_matrix is not None and self.end!='agg': # and self.computing=='cpu':
                     subj_exp=pd.read_csv(self.save_dir+'exp_tmp.txt',sep='\t',header=None,usecols=[list(e_subj).index(iii)+1])
 
                     subset_correlation_network = ((len(b_subj)-1) * (self.correlation_matrix) - subj_exp.values.T * subj_exp.values) /(len(b_subj)-2)
@@ -161,8 +174,11 @@ class Milipeed(Panda):
                     self.lionish_network = len(b_subj) * (self.correlation_matrix - subset_correlation_network) + subset_correlation_network
                     del subset_correlation_network
                     gc.collect()
-                    if self.precision=='single':
-                        self.lionish_network=np.float32(self.lionish_network)
+                    
+                elif self.correlation_matrix is not None and self.end=='agg':
+                    self.lionish_network = self.correlation_matrix
+                if self.precision=='single':
+                    self.lionish_network=np.float32(self.lionish_network)
 
                 if self.correlation_matrix is None:
                     self.lionish_network=np.identity(self.num_genes, dtype=int)
@@ -175,32 +191,33 @@ class Milipeed(Panda):
                 del self.unique_tfs, self.gene_names#, self.motif_matrix_unnormalized
                 print('mem check2')
                 
-            milipeed_network = self.panda_loop(self.lionish_network, np.copy(self.motif_matrix_unnormalized), np.copy(self.ppi_matrix),computing=self.computing)
+            milipede_network = self.panda_loop(self.lionish_network, np.copy(self.motif_matrix_unnormalized), np.copy(self.ppi_matrix),computing=self.computing)
 
-            with Timer("Saving MILIPEED network %s to %s using %s format:" % (iii, self.save_dir, self.save_fmt)):
-                path = os.path.join(self.save_dir, "milipeed.%s.%s" % (iii, self.save_fmt))
+            with Timer("Saving milipede network %s to %s using %s format:" % (iii, self.save_dir, self.save_fmt)):
+                path = os.path.join(self.save_dir, "milipede.%s.%s" % (iii, self.save_fmt))
                 if self.save_fmt == 'txt':
-                    # np.savetxt(path, pd.melt(milipeed_network),fmt='%1.3f')
-                    pd.melt(pd.DataFrame(milipeed_network)).value.to_csv(path,sep='\t',float_format='%1.4f',index=False,header=False)
+                    # np.savetxt(path, pd.melt(milipede_network),fmt='%1.3f')
+                    pd.melt(pd.DataFrame(milipede_network)).value.to_csv(path,sep='\t',float_format='%1.4f',index=False,header=False)
                 elif self.save_fmt == 'npy':
-                    np.save(path, pd.melt(pd.DataFrame(milipeed_network)))
+                    np.save(path, pd.melt(pd.DataFrame(milipede_network)))
                 elif self.save_fmt == 'mat':
                     from scipy.io import savemat
-                    savemat(path, {'PredNet': milipeed_network})
+                    savemat(path, {'PredNet': milipede_network})
                 else:
                     print("Unknown format %s! Use npy format instead." % self.save_fmt)
-                    np.save(path, milipeed_network)
-            if self.total_milipeed_network is None: #    iii == 0:
-                self.total_milipeed_network = np.frombuffer(np.transpose(milipeed_network).tostring(),dtype=milipeed_network.dtype)
+                    np.save(path, milipede_network)
+            if self.total_milipede_network is None: #    iii == 0:
+                self.total_milipede_network = np.frombuffer(np.transpose(milipede_network).tostring(),dtype=milipede_network.dtype)
                 if hasattr(self,'unique_tfs'):
                     self.export_panda_results[['tf','gene']].to_csv(self.save_dir+'link_names.txt',sep='_',index=False,header=False)
                     pd.DataFrame(b_subj).to_csv(self.save_dir+str(len(b_subj))+'_subject_IDs.txt',sep='\t',index=False,header=False)
             else:
-                self.total_milipeed_network=np.column_stack((self.total_milipeed_network ,np.frombuffer(np.transpose(milipeed_network).tostring(),dtype=milipeed_network.dtype)))
+                self.total_milipede_network=np.column_stack((self.total_milipede_network ,np.frombuffer(np.transpose(milipede_network).tostring(),dtype=milipede_network.dtype)))
+            # if self.end=='agg':
+            #     break
+        return self.total_milipede_network
 
-        return self.total_milipeed_network
-
-    def save_milipeed_results(self, file='all_milipeed_nets'):
-        '''Write milipeed results to file.'''
-        np.savetxt(file, self.total_milipeed_network, delimiter="\t",header="")
+    def save_milipede_results(self, file='all_milipede_nets'):
+        '''Write milipede results to file.'''
+        np.savetxt(file, self.total_milipede_network, delimiter="\t",header="")
         return None

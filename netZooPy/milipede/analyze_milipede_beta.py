@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys, os, glob,re 
 # sys.path.insert(1,'../panda')
 # from netZooPy.panda.panda import Panda
-from .milipeed import Milipeed
+from .milipede import milipede
 # from netZooPy.panda.analyze_panda import AnalyzePanda
 import numpy as np
 import collections
@@ -19,20 +19,20 @@ import shutil
 import pandas as pd
 import numpy as np
 import netZooPy
-from netZooPy.milipeed.milipeed import Milipeed
-from netZooPy.milipeed.analyze_milipeed_beta import AnalyzeMilipeed_beta
-# AnalyzeMilipeed_beta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
-AnalyzeMilipeed_beta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
+from netZooPy.milipede.milipede import milipede
+from netZooPy.milipede.analyze_milipede_beta import Analyzemilipede_beta
+# Analyzemilipede_beta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
+Analyzemilipede_beta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
 
 
 """
 
 
-class AnalyzeMilipeed_beta(Milipeed):
-    '''GLM MILIPEED links discriminated by age, sex, BMI, FEV and PY.'''
-    def __init__(self,data_file,gene_subset=None,covar='age',factor_file='analyses/MILIPEED/milipeed_links.txt',meta='analyses/MILIPEED/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
+class Analyzemilipede_beta(milipede):
+    '''GLM milipede links discriminated by age, sex, BMI, FEV and PY.'''
+    def __init__(self,data_file,gene_subset=None,covar='age',factor_file='analyses/milipede/milipede_links.txt',meta='analyses/milipede/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
     # def __init__(self,input_path,gene_subset,omili_nets,links_file,meta,utdir='.',):
-        '''Load variables from Milipeed.'''
+        '''Load variables from milipede.'''
         metadata = pd.read_csv(meta,sep=',',header=0)
         date="{:%d.%m.%Y}".format(datetime.now())
         dir=(out)
@@ -78,9 +78,9 @@ class AnalyzeMilipeed_beta(Milipeed):
 
                 
                 # del append_data, tmp, tmp1
-                # milipeed_analysis= runInParallel(__analysis_loop(i),)
+                # milipede_analysis= runInParallel(__analysis_loop(i),)
 
-                self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
+                self.milipede_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
 
         elif data.endswith('.npy'):
             append_data=np.load(data)
@@ -140,9 +140,9 @@ class AnalyzeMilipeed_beta(Milipeed):
             population=metadata.merge(append_data,left_index=True,right_index=True)
 
             del append_data, tmp, tmp1
-            # milipeed_analysis= runInParallel(__analysis_loop(i),)
+            # milipede_analysis= runInParallel(__analysis_loop(i),)
 
-            self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
+            self.milipede_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
             # statsmodels.tools.sm_exceptions.PerfectSeparationError: #: Perfect separation detected, results not available
     
 
@@ -150,7 +150,7 @@ class AnalyzeMilipeed_beta(Milipeed):
         # count=1
         # gene=population.columns[8]
         # results=LM(population,gene)
-        # results.T.to_csv(('/udd/redmo/analyses/MILIPEED/MILI_'+set+'_indv_'+ccc+".txt"),sep='\t')
+        # results.T.to_csv(('/udd/redmo/analyses/milipede/MILI_'+set+'_indv_'+ccc+".txt"),sep='\t')
         results = None
         # append_data=pd.DataFrame(pd.read_csv(data,sep='\t',index_col=0,header=None,skiprows=count+1,nrows=1))
         # append_data.columns=[]
@@ -172,13 +172,13 @@ class AnalyzeMilipeed_beta(Milipeed):
                 append_data=metadata.merge(population,left_index=True,right_index=True)
             ncov=len(covar)
             results=self.iLiM(append_data,gene,computation,covar,ncov)   ## ^^ check if len(metadata) == 8
-            results.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+            results.T.to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t',mode='a')
     #             except:
     #                 pass
     #         else:
     #             try:
     #                 results=self.iLiM(population,gene,computation,covar)   ## ^^ check if len(metadata) == 8
-    #                 results.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a',header=False)
+    #                 results.T.to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t',mode='a',header=False)
     #             except:
     #                 pass
             if (count+1/100).is_integer():
@@ -231,9 +231,9 @@ class AnalyzeMilipeed_beta(Milipeed):
 
 ## still working on
 
-    # def top_network_plot(self, column = 0, top = 100, file = 'milipeed_top_100.png'):
+    # def top_network_plot(self, column = 0, top = 100, file = 'milipede_top_100.png'):
     #     '''Select top genes.'''
-    #     export_panda_results[['force']] = milipeed_results.iloc[:,column]
+    #     export_panda_results[['force']] = milipede_results.iloc[:,column]
     #     plot = AnalyzePanda(self)
     #     plot.top_network_plot(top, file)
     #     return None

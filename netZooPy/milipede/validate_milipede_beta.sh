@@ -2,7 +2,7 @@
 ###BOTH STEPS IN AUROC CALC btwn PWM + wgbsmeth + CHiP meth
 ## for all ChIP files associated with Motif which will me intersected with WGBS/Me array
 #PARAMETER REGION
-# validate_milipeed ChIPdir motifdir WGBSdir valoutdir {
+# validate_milipede ChIPdir motifdir WGBSdir valoutdir {
 # ChIPdir=$1 # %%% location of ChIP bed files
 ChIPdir='/udd/redmo/data/MotifPipeline/remap/' ## chr start end gene-target per cell line name
 # tfdb=$ChIPdir/meta2IDR.txt # metadata file including ChIP file name and gene
@@ -20,7 +20,7 @@ WGBSmeta=$WGBSdir/cellline_meta.txt
 
 
 # outdir=$4
-outdir='/udd/redmo/data/MotifPipeline/validate_milipeed/'
+outdir='/udd/redmo/data/MotifPipeline/validate_milipede/'
 rm -r -i -f $outdir
 mkdir $outdir
 counter=1 

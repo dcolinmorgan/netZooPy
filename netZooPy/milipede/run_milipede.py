@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Description:
-   Run MILIPEED algorithm from the command line.
+   Run milipede algorithm from the command line.
 
 Usage:
   -h,  --help: help
@@ -14,11 +14,11 @@ Usage:
   end: to end at nth sample (optional, must with start)
   
 Example:
-  python run_milipeed.py -e ./ToyData/ToyExpressionData.txt -me ./ToyData/ToyMotifData.txt -p ./ToyData/ToyPPIData.txt -o test_milipeed.txt
+  python run_milipede.py -e ./ToyData/ToyExpressionData.txt -me ./ToyData/ToyMotifData.txt -p ./ToyData/ToyPPIData.txt -o test_milipede.txt
 """
 import sys
 import getopt
-from netZooPy.milipeed.milipeed import Milipeed
+from netZooPy.milipede.milipede import milipede
 from netZooPy.panda.panda import Panda
 
 
@@ -28,7 +28,7 @@ def main(argv):
     motif = None
     methylation_data = None
     ppi = None
-    output_file = "output_milipeed.txt"
+    output_file = "output_milipede.txt"
     rm_missing = False
     lioness_file = False
     # Get input options
@@ -65,11 +65,11 @@ def main(argv):
         print(__doc__)
         sys.exit()
 
-    # Run MILIPEED
-    print('Start Milipeed run ...')
-    panda_obj = Milipeed(expression_data,methylation, motif, ppi, cgmap, outdir,out,start=start, end=end)
+    # Run milipede
+    print('Start milipede run ...')
+    panda_obj = milipede(expression_data,methylation, motif, ppi, cgmap, outdir,out,start=start, end=end)
 
-    panda_obj.save_milipeed_results(output_file)
+    panda_obj.save_milipede_results(output_file)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys, os, glob,re 
 # sys.path.insert(1,'../panda')
 # from netZooPy.panda.panda import Panda
-from .milipeed import Milipeed
+from .milipede import milipede
 # from netZooPy.panda.analyze_panda import AnalyzePanda
 import numpy as np
 import collections
@@ -27,29 +27,29 @@ from joblib import wrap_non_picklable_objects
 import pandas as pd
 import numpy as np
 import netZooPy
-from netZooPy.milipeed.milipeed import Milipeed
-from netZooPy.milipeed.analyze_milipeed_delta import AnalyzeMilipeed_delta
-# AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
-# AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
-# AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','modCopd_pathConserv','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta_modCOPD.txt',out='LTRC_glm_mod_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
-AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','modCopd_pathConserv','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta_modCOPD.txt',out='LTRC_glm_mod_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
+from netZooPy.milipede.milipede import milipede
+from netZooPy.milipede.analyze_milipede_delta import Analyzemilipede_delta
+# Analyzemilipede_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='',out='LTRC_glm_pard_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
+# Analyzemilipede_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_pard_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
+# Analyzemilipede_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','modCopd_pathConserv','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta_modCOPD.txt',out='LTRC_glm_mod_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
+Analyzemilipede_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','modCopd_pathConserv','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta_modCOPD.txt',out='LTRC_glm_mod_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
 
-# AnalyzeMilipeed_delta('data/LTRC/test.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/test_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_test/',gene_subset=None,computation='cpu',n_cores=1)
-# AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','IPF','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta_IPF.txt',out='LTRC_glm_IPF_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
-# AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','IPF','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta_IPF.txt',out='LTRC_glm_IPF_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
+# Analyzemilipede_delta('data/LTRC/test.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/test_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_pard_output_test/',gene_subset=None,computation='cpu',n_cores=1)
+# Analyzemilipede_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','IPF','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta_IPF.txt',out='LTRC_glm_IPF_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
+# Analyzemilipede_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','IPF','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta_IPF.txt',out='LTRC_glm_IPF_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
 
-# AnalyzeMilipeed_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','test','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/test_blood_meta_IPF.txt',out='test_LTRC_glm_IPF_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
-AnalyzeMilipeed_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','test','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/test_lung_meta_IPF.txt',out='test_LTRC_glm_IPF_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
+# Analyzemilipede_delta('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','test','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/test_blood_meta_IPF.txt',out='test_LTRC_glm_IPF_output_blood/',gene_subset=None,computation='cpu',n_cores=1)
+Analyzemilipede_delta('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','test','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/test_lung_meta_IPF.txt',out='test_LTRC_glm_IPF_output_lung/',gene_subset=None,computation='cpu',n_cores=1)
 
 
 """
 
 
-class AnalyzeMilipeed_delta(Milipeed):
-    '''GLM MILIPEED links discriminated by age, sex, BMI, FEV and PY.'''
-    def __init__(self,data_file,gene_subset=None,covar='age',factor_file='analyses/MILIPEED/milipeed_links.txt',meta='analyses/MILIPEED/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
+class Analyzemilipede_delta(milipede):
+    '''GLM milipede links discriminated by age, sex, BMI, FEV and PY.'''
+    def __init__(self,data_file,gene_subset=None,covar='age',factor_file='analyses/milipede/milipede_links.txt',meta='analyses/milipede/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
     # def __init__(self,input_path,gene_subset,omili_nets,links_file,meta,utdir='.',):
-        '''Load variables from Milipeed.'''
+        '''Load variables from milipede.'''
         metadata = pd.read_csv(meta,sep=',',header=0)
         date="{:%d.%m.%Y}".format(datetime.now())
         dir=(out)
@@ -84,17 +84,17 @@ class AnalyzeMilipeed_delta(Milipeed):
 
                 
                 # del append_data, tmp, tmp1
-                # milipeed_analysis= runInParallel(__analysis_loop(i),)
+                # milipede_analysis= runInParallel(__analysis_loop(i),)
             operations=list(range((n_cores)))
             
             results_df=Parallel(n_jobs=n_cores)(self.analysis_loop(data_file,head,metadata,total_links,count,out,date,computation,covar,ncov,n_cores) for count in operations)
             self.results_df=results_df
         # results_df=pd.DataFrame(results_df)
-            # results_df.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t')
-            # results_df.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+            # results_df.to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t')
+            # results_df.to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t',mode='a')
 
             # return results_df                                           # data_file,head,metadata,total_links,count,out,date,computation,covar,ncov
-                # self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
+                # self.milipede_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
 
         elif data.endswith('.npy'):
             append_data=np.load(data)
@@ -154,11 +154,11 @@ class AnalyzeMilipeed_delta(Milipeed):
         #     population=metadata.merge(append_data,left_index=True,right_index=True)
 
         #     del append_data, tmp, tmp1
-        #     # milipeed_analysis= runInParallel(__analysis_loop(i),)
+        #     # milipede_analysis= runInParallel(__analysis_loop(i),)
 
-        #     self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
+        #     self.milipede_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
         #     # statsmodels.tools.sm_exceptions.PerfectSeparationError: #: Perfect separation detected, results not available
-        #     pd.DataFrame(results_df).to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+        #     pd.DataFrame(results_df).to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t',mode='a')
 
     @delayed
     @wrap_non_picklable_objects
@@ -204,6 +204,6 @@ class AnalyzeMilipeed_delta(Milipeed):
             results_df = results_df.append(np.transpose(results[[gene+"tvals",gene+"pvals",gene+"coeff"]]))
             if (counts/10000).is_integer():
                 print(counts/len(total_links))
-        results_df.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t')
+        results_df.to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t')
         return results_df
 

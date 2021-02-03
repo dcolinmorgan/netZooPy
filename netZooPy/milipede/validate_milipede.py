@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys, os
 sys.path.insert(1,'../panda')
 from netZooPy.panda.panda import Panda
-from .milipeed import Milipeed
+from .milipede import milipede
 
 import re, netZooPy, graphviz, glob, os, collections 
 import numpy as np
@@ -20,10 +20,10 @@ from netZooPy.panda.panda import Panda
 import subprocess
 # import matplotlib.backends.backend_pdf
 
-class ValidateMilipeed(Milipeed):
-    '''GLM MILIPEED links discriminated by age, sex, BMI, FEV and PY.'''
+class Validatemilipede(milipede):
+    '''GLM milipede links discriminated by age, sex, BMI, FEV and PY.'''
     def __init__(self,chip_meta,outdir='mili_validation'):
-        '''Load variables from Milipeed.'''
+        '''Load variables from milipede.'''
         self.chip = self.restrict_ChIP()
         self.motif = self.format_motif(self.chip)
         self.validation=self.run_validation(self.motif)
@@ -65,7 +65,7 @@ class ValidateMilipeed(Milipeed):
 
     def run_validation(self,outdir,TFdir='/udd/redmo/data/MotifPipeline/ENCODE/A549_hg19',motifdir='/udd/redmo/data/MotifPipeline/hg19_refseq_100kb_tr/',bsfile='/udd/redmo/data/MotifPipeline/ENCODE/wgbsin/ENCFF005TID_hg19.txt'):
         valoutdir = outdir+'/miliVal_outdir';
-        subprocess.check_call(["/udd/redmo/netZooPy/netZooPy/milipeed/validate_milipeed.sh TFdir motifdir bsfile valoutdir"],shell=True)
+        subprocess.check_call(["/udd/redmo/netZooPy/netZooPy/milipede/validate_milipede.sh TFdir motifdir bsfile valoutdir"],shell=True)
         return valoutdir
 
     def plot_validation(self):

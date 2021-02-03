@@ -4,54 +4,53 @@ import os, os.path,sys
 import numpy as np
 import pandas as pd
 from .timer import Timer
-sys.path.insert(1,'../panda')
+# sys.path.insert(1,'../panda')
 from netZooPy.panda.panda import Panda
 
 
-class Milipeed(Panda):
+class milipede(object):
     """
     Description:
-       Using MILIPEED to infer single-sample gene regulatory networks.
+       Using milipede to infer single-sample gene regulatory networks.
+
     Usage:
         1. Reading in input data (expression data, motif prior, methylation data, TF PPI data)
         2. Computing lioness-style coexpression and motif network
         3. Normalizing networks
         4. Running PANDA algorithm
-        5. Writing out MILIPEED networks
+        5. Writing out milipede networks
+
+
     Inputs:
        obj: PANDA object, generated with keep_expression_matrix=True.
        obj.motif_matrix: TF DNA motif binding data in tf-by-gene format.
+
     Authors: 
        dcolinmorgan
     """
 
-    def __init__(self, expression_file, motif_file,methylation_file, ppi_file,CGmap='~/netZooPy/tests/milipeed/MotifPrior_CGmap.txt', start=1, end=None,save_dir='milipeed_output', save_fmt='txt'):
+    def __init__(self, expression_file, motif_file,methylation_file, ppi_file, start=1, end=None,save_dir='milipede_output', save_fmt='txt'):
         # =====================================================================
         # Data loading
         # =====================================================================
         if methylation_file is not None and motif_file is not None:
             with Timer('Loading methylation data ...'):
                 tmp = pd.read_csv(methylation_file, sep='\t', header=0,index_col=0)
-                self.methylation_map = pd.read_csv(CGmap, sep='\t', header=None,index_col=2)
+                self.methylation_map = pd.read_csv('~/netZooPy/tests/ToyData/MotifPrior_CGmap.txt', sep='\t', header=None,index_col=2)
                 self.mdata=self.methylation_map.merge(tmp,left_index=True, right_index=True)
-                # if self.mdata.max-self.mdata.min > 1: ##input methylation values are raw, turn into Me ratio and then binding score
-                    # self.mdata= 1-(self.mdata/100)
-                # else:
-                #     self.mdata= 1-self.mdata ## convert to binding score
                 self.methylation_subjects = sorted(set(tmp.columns))
                 self.methylation_genes = self.mdata[1].tolist()
                 self.methylation_tfs = self.mdata[0].tolist()
-                # self.mdata.drop([0,1],1,inplace=True)
-                print('Methylation matrix:', self.mdata.shape)
+                self.methylation_data=self.mdata#.drop([0,1],1)
+                # print('Methylation matrix:', self.methylation_data.shape)
 
-        # if methylation_file is None and motif_file is not None:
             with Timer('Loading motif data ...'):
-                self.motif_data = pd.read_csv(CGmap, sep='\t', header=None)
-                self.motif_data[2]=1 ## read motif in from CGmap, static weight replaced with methyl score, can comment this out
+                self.motif_data = pd.read_csv(motif_file, sep='\t', header=None)
                 self.motif_tfs = sorted(set(self.motif_data[0]))
                 self.motif_genes = sorted(set(self.motif_data[1]))
-                print('Motif:', self.motif_data.shape)
-                # print('No Methylation informed motif information given: motif will be uniform and output lioness networks')
+        else:
+            self.methyl_data = None
+            print('No Methylation informed motif information given: motif will be uniform and output lioness networks')
 
         if expression_file:
             with Timer('Loading expression data ...'):
@@ -83,35 +82,56 @@ class Milipeed(Panda):
         self.num_tfs    = len(self.unique_tfs)
         self.num_subj   = len(self.subjects)
         self.indexes    = range(self.num_subj)[start-1:end] 
-        self.total_milipeed_network = None
+
         # Initialize expression data
         self.expression = np.zeros((self.num_genes, self.expression_data.shape[1]))
         # Auxiliary dicts
         self.gene2idx = {x: i for i, x in enumerate(self.gene_names)}
+        self.subj2idx = {x: i for i, x in enumerate(self.subjects)}
         self.tf2idx = {x: i for i, x in enumerate(self.unique_tfs)}
         # Populate gene expression
         idx_geneEx = [self.gene2idx.get(x, 0) for x in self.expression_genes]
+        # self.EEG=pd.DataFrame(dict.items(gene2idx))
+        idx_subjEx = [self.subj2idx.get(x, 0) for x in self.expression_subjects]
+        # self.EES=pd.DataFrame(dict.items(subj2idx))
+
         print(self.expression.shape)
         print(self.expression_data.shape)
         self.expression[idx_geneEx, :] = self.expression_data.values
         self.expression_data = pd.DataFrame(data=self.expression)
 
-
+        # Initialize methylation data
+        self.methylation = np.zeros((self.num_genes, self.methylation_data.shape[1]))
+        # Auxiliary dicts
+        # gene2idx = {x: i for i, x in enumerate(self.gene_names)}
+        # tf2idx = {x: i for i, x in enumerate(self.unique_tfs)}
+        # Populate methylation
+        idx_geneMe = [self.gene2idx.get(x, 0) for x in self.methylation_genes]
+        self.MEG=pd.DataFrame(dict.items(self.gene2idx))[0]
+        idx_subjMe = [self.subj2idx.get(x, 0) for x in self.methylation_subjects]
+        self.MES=pd.DataFrame(dict.items(self.subj2idx))[0]
+        idx_tfMe = [self.tf2idx.get(x, 0) for x in self.methylation_tfs]
+        self.MET=pd.DataFrame(dict.items(self.tf2idx))[0]
+        print(self.methylation.shape)
+        print(self.methylation_data.shape)
+        self.methylation[idx_geneMe, :] = self.methylation_data.values
+        self.methylation_data = pd.DataFrame(data=self.methylation)
+    
         # Create the output folder if not exists
         self.save_dir = save_dir
         self.save_fmt = save_fmt
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        # Run MILIPEED
-        self.total_milipeed_network = self.__milipeed_loop()
-        # return self
-        # # create result data frame
-        # self.export_milipeed_results = pd.DataFrame(self.total_milipeed_network)
+        # Run milipede
+        self.total_lioness_network = self.__milipede_loop()
 
-    def __milipeed_loop(self):
+        # # create result data frame
+        self.export_milipede_results = pd.DataFrame(total_lioness_network)
+
+    def __milipede_loop(self):
         for iii in self.indexes:
-            print("Running MILIPEED for subject %d:" % (iii+1))
+            print("Running milipede for subject %d:" % (iii+1))
             idx = [x for x in range(self.num_subj) if x != iii]  # all samples except iii
             # =====================================================================
             # Network construction
@@ -126,65 +146,53 @@ class Milipeed(Panda):
                     self.correlation_matrix = np.nan_to_num(self.correlation_matrix)
                 # correlation_matrix = self._normalize_network(correlation_matrix)
                 # self.subset_correlation_network = self._normalize_network(np.corrcoef(self.expression_data.values[:, idx]))
-                self.correlation_matrix = self._normalize_network(self.correlation_matrix)
-
                 self.subset_correlation_network = np.corrcoef(self.expression_data.values[:, idx])
-                self.subset_correlation_network = self._normalize_network(self.subset_correlation_network)
                 self.lionish_network = self.num_subj * (self.correlation_matrix - self.subset_correlation_network) + self.subset_correlation_network
             # return self
             with Timer('Creating motif network ...'):
-
-                # Restrict methylation data
-                self.subMtf=self.mdata[self.mdata[0].isin(self.unique_tfs)]
-                self.subMtf=self.subMtf[self.subMtf[1].isin(self.gene_names)]
-
                 self.motif_matrix_unnormalized = np.zeros((self.num_tfs, self.num_genes))
-                idx_tfs = [self.tf2idx.get(x, 0) for x in self.subMtf[0]]
-                idx_genes = [self.gene2idx.get(x, 0) for x in self.subMtf[1]]
+                idx_tfs = [self.tf2idx.get(x, 0) for x in self.MET]
+                idx_genes = [self.gene2idx.get(x, 0) for x in self.MEG]
                 idx = np.ravel_multi_index((idx_tfs, idx_genes), self.motif_matrix_unnormalized.shape)
-                self.motif_matrix_unnormalized.ravel()[idx] = self.subMtf[self.subjects[iii]]
-                self.motif_matrix=1-self.motif_matrix_unnormalized
-                # self.motif_matrix = self._normalize_network(1-self.motif_matrix_unnormalized)
-                del self.motif_matrix_unnormalized
-            return self
-            # if self.ppi_data is None:
-            #     self.ppi_matrix = np.identity(self.num_tfs, dtype=int)
-            # else:
-            #     with Timer('Creating PPI network ...'):
-            #         self.ppi_matrix = np.identity(self.num_tfs)
-            #         idx_tf1 = [self.tf2idx.get(x, 0) for x in self.ppi_data[0]]
-            #         idx_tf2 = [self.tf2idx.get(x, 0) for x in self.ppi_data[1]]
-            #         idx = np.ravel_multi_index((idx_tf1, idx_tf2), self.ppi_matrix.shape)
-            #         self.ppi_matrix.ravel()[idx] = self.ppi_data[2]
-            #         idx = np.ravel_multi_index((idx_tf2, idx_tf1), self.ppi_matrix.shape)
-            #         self.ppi_matrix.ravel()[idx] = self.ppi_data[2]
+                if self.methylation_data is not None:
+                    self.motif_matrix_unnormalized.ravel()[idx] = 1-(self.methylation_data[iii])/100
+                else:
+                    self.motif_matrix_unnormalized.ravel()[idx] = self.motif_data[2]
+            
+            if self.ppi_data is None:
+                self.ppi_matrix = np.identity(self.num_tfs, dtype=int)
+            else:
+                with Timer('Creating PPI network ...'):
+                    self.ppi_matrix = np.identity(self.num_tfs)
+                    idx_tf1 = [self.tf2idx.get(x, 0) for x in self.ppi_data[0]]
+                    idx_tf2 = [self.tf2idx.get(x, 0) for x in self.ppi_data[1]]
+                    idx = np.ravel_multi_index((idx_tf1, idx_tf2), self.ppi_matrix.shape)
+                    self.ppi_matrix.ravel()[idx] = self.ppi_data[2]
+                    idx = np.ravel_multi_index((idx_tf2, idx_tf1), self.ppi_matrix.shape)
+                    self.ppi_matrix.ravel()[idx] = self.ppi_data[2]
 
-            # milipeed_network = self.panda_loop(self.lionish_network, self.motif_matrix, self.ppi_matrix)
-            # milipeed_network.columns=self.gene_names
-            # milipeed_network.index=self.unique_tfs
-            # meta_path = os.path.join(self.save_dir,"milipeed_meta.txt")
-            # pd.melt(milipeed_network).to_csv(meta_path,sep='\t',float_format='%1.4f')
+            milipede_network = self.panda_loop(self.lionish_network, self.motif_matrix_unnormalized, self.ppi_matrix)
 
-            # with Timer("Saving MILIPEED network %d to %s using %s format:" % (iii+1, self.save_dir, self.save_fmt)):
-            #     path = os.path.join(self.save_dir, "milipeed.%d.%s" % (iii+1, self.save_fmt))
-            #     if self.save_fmt == 'txt':
-            #         pd.melt(milipeed_network).value.to_csv(path,sep='\t',float_format='%1.4f',index=False)
-            #     elif self.save_fmt == 'npy':
-            #         np.save(path, milipeed_network)
-            #     elif self.save_fmt == 'mat':
-            #         from scipy.io import savemat
-            #         savemat(path, {'PredNet': milipeed_network})
-            #     else:
-            #         print("Unknown format %s! Use npy format instead." % self.save_fmt)
-            #         np.save(path, milipeed_network)
-        #     if self.total_milipeed_network is None: #    iii == 0:
-        #         self.total_milipeed_network = np.fromstring(np.transpose(milipeed_network).tostring(),dtype=milipeed_network.dtype)
-        #     else:
-        #         self.total_milipeed_network=np.column_stack((self.total_milipeed_network ,np.fromstring(np.transpose(milipeed_network).tostring(),dtype=milipeed_network.dtype)))
+            with Timer("Saving milipede network %d to %s using %s format:" % (iii+1, self.save_dir, self.save_fmt)):
+                path = os.path.join(self.save_dir, "milipede.%d.%s" % (iii+1, self.save_fmt))
+                if self.save_fmt == 'txt':
+                    np.savetxt(path, milipede_network)
+                elif self.save_fmt == 'npy':
+                    np.save(path, milipede_network)
+                elif self.save_fmt == 'mat':
+                    from scipy.io import savemat
+                    savemat(path, {'PredNet': milipede_network})
+                else:
+                    print("Unknown format %s! Use npy format instead." % self.save_fmt)
+                    np.save(path, milipede_network)
+            if iii == 0:
+                self.total_milipede_network = np.fromstring(np.transpose(milipede_network).tostring(),dtype=milipede_network.dtype)
+            else:
+                self.total_milipede_network=np.column_stack((self.total_milipede_network ,np.fromstring(np.transpose(milipede_network).tostring(),dtype=milipede_network.dtype)))
 
-        # return self.total_milipeed_network
+        return self.total_milipede_network
 
-    def save_milipeed_results(self, file='milipeed.txt'):
-        '''Write milipeed results to file.'''
-        np.savetxt(file, self.total_milipeed_network, delimiter="\t",header="")
+    def save_milipede_results(self, file='milipede.txt'):
+        '''Write milipede results to file.'''
+        np.savetxt(file, self.total_milipede_network, delimiter="\t",header="")
         return None

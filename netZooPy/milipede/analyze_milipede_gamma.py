@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys, os, glob,re 
 # sys.path.insert(1,'../panda')
 # from netZooPy.panda.panda import Panda
-from .milipeed import Milipeed
+from .milipede import milipede
 # from netZooPy.panda.analyze_panda import AnalyzePanda
 import numpy as np
 import collections
@@ -27,20 +27,20 @@ from joblib import wrap_non_picklable_objects
 import pandas as pd
 import numpy as np
 import netZooPy
-from netZooPy.milipeed.milipeed import Milipeed
-from netZooPy.milipeed.analyze_milipeed_gamma import AnalyzeMilipeed_gamma
-# AnalyzeMilipeed_gamma('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_par_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
-AnalyzeMilipeed_gamma('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_par_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
+from netZooPy.milipede.milipede import milipede
+from netZooPy.milipede.analyze_milipede_gamma import Analyzemilipede_gamma
+# Analyzemilipede_gamma('data/LTRC/lLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/lung_meta.txt',out='LTRC_glm_par_output_lung/',gene_subset=None,computation='cpu',n_cores=8)
+Analyzemilipede_gamma('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinCopd','age','race'],factor_file='data/LTRC/only_CG.txt',meta='data/LTRC/diff/blood_meta.txt',out='LTRC_glm_par_output_blood/',gene_subset=None,computation='cpu',n_cores=8)
 
 
 """
 
 
-class AnalyzeMilipeed_gamma(Milipeed):
-    '''GLM MILIPEED links discriminated by age, sex, BMI, FEV and PY.'''
-    def __init__(self,data_file,gene_subset=None,covar='age',factor_file='analyses/MILIPEED/milipeed_links.txt',meta='analyses/MILIPEED/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
+class Analyzemilipede_gamma(milipede):
+    '''GLM milipede links discriminated by age, sex, BMI, FEV and PY.'''
+    def __init__(self,data_file,gene_subset=None,covar='age',factor_file='analyses/milipede/milipede_links.txt',meta='analyses/milipede/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
     # def __init__(self,input_path,gene_subset,omili_nets,links_file,meta,utdir='.',):
-        '''Load variables from Milipeed.'''
+        '''Load variables from milipede.'''
         metadata = pd.read_csv(meta,sep=',',header=0)
         date="{:%d.%m.%Y}".format(datetime.now())
         dir=(out)
@@ -74,10 +74,10 @@ class AnalyzeMilipeed_gamma(Milipeed):
 
                 
                 # del append_data, tmp, tmp1
-                # milipeed_analysis= runInParallel(__analysis_loop(i),)
-            self.milipeed_analysis=Parallel(n_jobs=n_cores)(self.analysis_loop(data_file,head,metadata,total_links,count,out,date,computation,covar,ncov) for count in (total_links.index))
+                # milipede_analysis= runInParallel(__analysis_loop(i),)
+            self.milipede_analysis=Parallel(n_jobs=n_cores)(self.analysis_loop(data_file,head,metadata,total_links,count,out,date,computation,covar,ncov) for count in (total_links.index))
                                                                             # data_file,head,metadata,total_links,count,out,date,computation,covar,ncov
-                # self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
+                # self.milipede_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
 
         elif data.endswith('.npy'):
             append_data=np.load(data)
@@ -137,9 +137,9 @@ class AnalyzeMilipeed_gamma(Milipeed):
             population=metadata.merge(append_data,left_index=True,right_index=True)
 
             del append_data, tmp, tmp1
-            # milipeed_analysis= runInParallel(__analysis_loop(i),)
+            # milipede_analysis= runInParallel(__analysis_loop(i),)
 
-            self.milipeed_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
+            self.milipede_analysis=self.analysis_loop(population,metadata,out,date,computation,covar)
             # statsmodels.tools.sm_exceptions.PerfectSeparationError: #: Perfect separation detected, results not available
     @delayed
     @wrap_non_picklable_objects
@@ -147,7 +147,7 @@ class AnalyzeMilipeed_gamma(Milipeed):
         # count=1
         # gene=population.columns[8]
         # results=LM(population,gene)
-        # results.T.to_csv(('/udd/redmo/analyses/MILIPEED/MILI_'+set+'_indv_'+ccc+".txt"),sep='\t')
+        # results.T.to_csv(('/udd/redmo/analyses/milipede/MILI_'+set+'_indv_'+ccc+".txt"),sep='\t')
         results = None
         # append_data=pd.DataFrame(pd.read_csv(data,sep='\t',index_col=0,header=None,skiprows=count+1,nrows=1))
         # append_data.columns=[]
@@ -219,13 +219,13 @@ class AnalyzeMilipeed_gamma(Milipeed):
         results_df = results_df[[gene+"coeff",gene+"pvals"]]
         # return results_df
         # print(results_df)
-        np.transpose(results_df).to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a')
+        np.transpose(results_df).to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t',mode='a')
 #             except:
 #                 pass
 #         else:
 #             try:
 #                 results=self.iLiM(population,gene,computation,covar)   ## ^^ check if len(metadata) == 8
-#                 results.T.to_csv(os.path.join(out+"_milipeed_analysis_"+date+".txt"),sep='\t',mode='a',header=False)
+#                 results.T.to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t',mode='a',header=False)
 #             except:
 #                 pass
         if (count+1/100).is_integer():
@@ -240,9 +240,9 @@ class AnalyzeMilipeed_gamma(Milipeed):
 
 ## still working on
 
-    # def top_network_plot(self, column = 0, top = 100, file = 'milipeed_top_100.png'):
+    # def top_network_plot(self, column = 0, top = 100, file = 'milipede_top_100.png'):
     #     '''Select top genes.'''
-    #     export_panda_results[['force']] = milipeed_results.iloc[:,column]
+    #     export_panda_results[['force']] = milipede_results.iloc[:,column]
     #     plot = AnalyzePanda(self)
     #     plot.top_network_plot(top, file)
     #     return None

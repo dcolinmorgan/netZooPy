@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys, os, glob,re 
 sys.path.insert(1,'../panda')
 from netZooPy.panda.panda import Panda
-from .milipeed import Milipeed
+from .milipede import milipede
 from netZooPy.panda.analyze_panda import AnalyzePanda
 
 import numpy as np
@@ -16,11 +16,11 @@ from multiprocessing import Process
 from datetime import datetime, date
 import statsmodels.api as sm
 
-class AnalyzeMilipeed(Milipeed):
-    '''GLM MILIPEED links discriminated by age, sex, BMI, FEV and PY.'''
-    def __init__(self,input_path,gene_subset,mili_nets='/udd/redmo/analyses/MILIPEED/mili_subj.txt',links_file='/udd/redmo/analyses/MILIPEED/milipeed_links.txt',meta='/udd/redmo/analyses/MILIPEED/subj_metadata.txt',outdir='.'):
+class Analyzemilipede(milipede):
+    '''GLM milipede links discriminated by age, sex, BMI, FEV and PY.'''
+    def __init__(self,input_path,gene_subset,mili_nets='/udd/redmo/analyses/milipede/mili_subj.txt',links_file='/udd/redmo/analyses/milipede/milipede_links.txt',meta='/udd/redmo/analyses/milipede/subj_metadata.txt',outdir='.'):
     # def __init__(self,input_path,gene_subset,omili_nets,links_file,meta,utdir='.',):
-        '''Load variables from Milipeed.'''
+        '''Load variables from milipede.'''
         self.metadata = pd.read_csv(meta,sep='\t',header=0,index_col=0)
         subjmeta = pd.read_csv(mili_nets,sep='\t',names=['subj'],index_col=0)
         self.metadata=self.metadata.merge(subjmeta,left_on=self.metadata.index,right_on=subjmeta.index)
@@ -54,7 +54,7 @@ class AnalyzeMilipeed(Milipeed):
         #         self.population['age']=self.population['age'].astype(object)
         #     self.date="{:%d.%m.%Y}".format(datetime.now())
 
-        #     self.milipeed_analysis= self.__analysis_loop()
+        #     self.milipede_analysis= self.__analysis_loop()
 
         # elif gene_subset is not None:
         append_data = pd.DataFrame()
@@ -81,8 +81,8 @@ class AnalyzeMilipeed(Milipeed):
             # self.population['age']=self.population['age'].astype(object)
         self.date="{:%d.%m.%Y}".format(datetime.now())
         del append_data, tmp
-        # self.milipeed_analysis= runInParallel(self.__analysis_loop(i),)
-        self.milipeed_analysis=self.__analysis_loop()
+        # self.milipede_analysis= runInParallel(self.__analysis_loop(i),)
+        self.milipede_analysis=self.__analysis_loop()
 
 
             
@@ -92,7 +92,7 @@ class AnalyzeMilipeed(Milipeed):
 
         #     traces= glob.glob(input_path+'/*.txt')
         #     # links=pd.melt(pd.DataFrame(pd.read_csv(filepath,sep='\t',header=0,index_col=0)))
-        #     # meta='/udd/redmo/analyses/MILIPEED/subj_metadata.txt'
+        #     # meta='/udd/redmo/analyses/milipede/subj_metadata.txt'
 
         #     # path='/udd/redmo/analyses/SPIDER/lioness_output2'
         #     # links=9734704
@@ -119,8 +119,8 @@ class AnalyzeMilipeed(Milipeed):
         #             self.population['age']=self.population['age'].astype(object)
         #         self.date="{:%d.%m.%Y}".format(datetime.now())
         #         del append_data, tmp
-        #         # self.milipeed_analysis= runInParallel(self.__analysis_loop(i),)
-        #         self.milipeed_analysis=self.__analysis_loop()
+        #         # self.milipede_analysis= runInParallel(self.__analysis_loop(i),)
+        #         self.milipede_analysis=self.__analysis_loop()
                
 
     def iLiM(self,gene):
@@ -147,7 +147,7 @@ class AnalyzeMilipeed(Milipeed):
         # count=1
         # gene=self.population.columns[8]
         # results=LM(self.population,gene)
-        # results.T.to_csv(('/udd/redmo/analyses/MILIPEED/MILI_'+set+'_indv_'+ccc+".txt"),sep='\t')
+        # results.T.to_csv(('/udd/redmo/analyses/milipede/MILI_'+set+'_indv_'+ccc+".txt"),sep='\t')
         for count,gene in enumerate(self.population.columns[(self.metadata.shape[1]+1):self.population.shape[1]]): ### columns are links now if above append after T worked
             self.results=self.iLiM(gene)   ## ^^ check if len(metadata) == 8
             self.results.T.to_csv(os.path.join(self.outdir,self.date+".txt"),sep='\t',mode='a')
@@ -172,9 +172,9 @@ class AnalyzeMilipeed(Milipeed):
 
 ## still working on
 
-    def top_network_plot(self, column = 0, top = 100, file = 'milipeed_top_100.png'):
+    def top_network_plot(self, column = 0, top = 100, file = 'milipede_top_100.png'):
         '''Select top genes.'''
-        self.export_panda_results[['force']] = self.milipeed_results.iloc[:,column]
+        self.export_panda_results[['force']] = self.milipede_results.iloc[:,column]
         plot = AnalyzePanda(self)
         plot.top_network_plot(top, file)
         return None

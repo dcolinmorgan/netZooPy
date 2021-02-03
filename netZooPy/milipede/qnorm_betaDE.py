@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import glob
-from netZooPy.milipeed.analyze_milipeed_beta import AnalyzeMilipeed_beta
+from netZooPy.milipede.analyze_milipede_beta import Analyzemilipede_beta
 
 
 
@@ -45,7 +45,7 @@ for chunk in pd.read_csv('data/Beta_flagged.txt',sep='\t',chunksize=1000):#, ski
     pd.DataFrame(a.index).to_csv('LTRC_850k_cgs.txt',sep='\t',index=False,header=False)
     pd.DataFrame(META.subject_id).to_csv('LTRC_subj_interx.txt',sep='\t',index=False,header=False)
 
-    milipeed_analysis=AnalyzeMilipeed_beta(data=a,gene_subset=None,mili_nets='LTRC_subj_interx.txt',
+    milipede_analysis=Analyzemilipede_beta(data=a,gene_subset=None,mili_nets='LTRC_subj_interx.txt',
                 covar='age_baseline,gender,bmi,pre_fev1fvc',
                 factor_file='LTRC_850k_cgs.txt',meta='merged_LTRCmeta.txt',
                 out='noQC',computation='cpu',subset=ii)
@@ -60,7 +60,7 @@ for chunk in pd.read_csv('data/Beta_flagged.txt',sep='\t',chunksize=1000):#, ski
         result.to_csv('data/Beta_flagged_Qnorm.txt',sep='\t',mode='a',header=False,index=True)
 #     result
 
-    milipeed_analysis=AnalyzeMilipeed_beta(data=result,gene_subset=None,mili_nets='LTRC_subj_interx.txt',
+    milipede_analysis=Analyzemilipede_beta(data=result,gene_subset=None,mili_nets='LTRC_subj_interx.txt',
                 covar='age_baseline,gender,bmi,pre_fev1fvc',
                 factor_file='LTRC_850k_cgs.txt',meta='merged_LTRCmeta.txt',
                 out='Qnorm',computation='cpu',subset=ii)
