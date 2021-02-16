@@ -20,8 +20,13 @@ def test_lioness():
     panda_obj      =Panda(expression_data, motif, ppi, save_tmp=True, remove_missing=rm_missing,
                       keep_expression_matrix=bool(lioness_file), modeProcess='legacy', save_memory=False)
     # Set parameters
+<<<<<<< HEAD
     lioness_obj = Lioness(panda_obj, start=1, end=1)
     # lioness_obj.save_lioness_results(lioness_file)
+=======
+    lioness_obj = Lioness(panda_obj)
+    lioness_obj.save_lioness_results(lioness_file)
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
     # Read first lioness network
     res  = np.load('lioness_output/lioness.1.npy')
     gt = np.load('tests/lioness/lioness.1.npy')
@@ -33,8 +38,13 @@ def test_lioness():
     # Make sure to keep epxression matrix for next step
     panda_obj_2      = Panda(expression_data, motif, ppi, save_tmp=True, remove_missing=rm_missing,
                       keep_expression_matrix=True, modeProcess='legacy')
+<<<<<<< HEAD
     lioness_obj_2    = Lioness(panda_obj_2, start=1, end=1)
     # lioness_obj.save_lioness_results(lioness_file)
+=======
+    lioness_obj    = Lioness(panda_obj)
+    lioness_obj.save_lioness_results(lioness_file)
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
     # Read first lioness network
     res  = np.load('lioness_output/lioness.1.npy')
     gt   = np.load('tests/lioness/lionessCoexpression.1.npy')

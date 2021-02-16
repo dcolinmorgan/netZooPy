@@ -5,7 +5,11 @@ sys.path.insert(1,'../panda')
 from netZooPy.panda.panda import Panda
 from .milipeed import Milipeed
 
+<<<<<<< HEAD
 import re, netZooPy, glob, os, collections 
+=======
+import re, netZooPy, graphviz, glob, os, collections 
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
 import numpy as np
 from IPython.display import Image
 import networkx as nx
@@ -43,7 +47,11 @@ class ValidateMilipeed(Milipeed):
         sub.to_csv(('A549_hg19/meta2IDR.txt'),sep='\t',header=False,index=False)
 
     def format_motif(self,motif_path='/udd/rekrg/EpiPANDA/FIMO_results/ScanBedResults/',out_path='/udd/redmo/data//MotifPipeline/hg19_refseq_100kb_tr/'):
+<<<<<<< HEAD
         traces= os.listdir(motif_path) ## perhaps use glob.glob
+=======
+        traces= os.listdir(motif_path)
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         for j,trace in enumerate(traces):
             filepath = os.path.join(motif_path, trace)
             data=pd.read_csv(filepath,sep='\t',names=['loc','pwma','pval','gene','dist'])
@@ -63,7 +71,11 @@ class ValidateMilipeed(Milipeed):
     # def convert_assembly():
     #     ~/tools/liftOver ~/data/MotifPipeline/ENCODE/wgbsin/ENCFF005TID.txt ~/hg38ToHg19.over.chain ~/data/MotifPipeline/ENCODE/wgbsin/ENCFF005TID_hg19.txt unmatched.txt
 
+<<<<<<< HEAD
     def run_validation(self,outdir,TFdir='data/MotifPipeline/remap/',motifdir='data/MotifPipeline/hg38_refseq_100kb_tr_fromhg19/',bsfile='data/MotifPipeline/ENCODE/wgbsin/ENCFF005TID_hg19.txt'):
+=======
+    def run_validation(self,outdir,TFdir='/udd/redmo/data/MotifPipeline/ENCODE/A549_hg19',motifdir='/udd/redmo/data/MotifPipeline/hg19_refseq_100kb_tr/',bsfile='/udd/redmo/data/MotifPipeline/ENCODE/wgbsin/ENCFF005TID_hg19.txt'):
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         valoutdir = outdir+'/miliVal_outdir';
         subprocess.check_call(["/udd/redmo/netZooPy/netZooPy/milipeed/validate_milipeed.sh TFdir motifdir bsfile valoutdir"],shell=True)
         return valoutdir
@@ -72,7 +84,11 @@ class ValidateMilipeed(Milipeed):
         table=[]
         val_score = outdir+'/miliVal_outdir';
         pdf = matplotlib.backends.backend_pdf.PdfPages(val_score+"/val_output.pdf")
+<<<<<<< HEAD
         traces= os.listdir(val_score) ## perhaps use glob.glob
+=======
+        traces= os.listdir(val_score)
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         for j,trace in enumerate(traces):
             filepath = os.path.join(val_score, trace)
             data=pd.read_csv(filepath,sep='\t',names=["chrMotif", "MSS", "MES",'pwm','pval','gene','chrWGBS','WSS','WES',"wgbs",'chrChIP','CSS','CES',"ChIPTF",'idk']) 

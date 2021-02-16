@@ -1,10 +1,17 @@
 from __future__ import print_function
 
 import sys, os, glob,re 
+<<<<<<< HEAD
 # sys.path.insert(1,'../panda')
 # from netZooPy.panda.panda import Panda
 # from .milipeed import Milipeed
 # from netZooPy.panda.analyze_panda import AnalyzePanda
+=======
+sys.path.insert(1,'../panda')
+from netZooPy.panda.panda import Panda
+from .milipeed import Milipeed
+from netZooPy.panda.analyze_panda import AnalyzePanda
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
 
 import numpy as np
 import collections
@@ -15,6 +22,7 @@ import netZooPy
 from multiprocessing import Process
 from datetime import datetime, date
 import statsmodels.api as sm
+<<<<<<< HEAD
 from cuml import 
 
 class AnalyzeMilipeed(Lioness):
@@ -29,16 +37,34 @@ class AnalyzeMilipeed(Lioness):
 
         total_links=pd.read_csv(links_file,sep='\t',names=['TF','gene'])
         self.covar=covar
+=======
+
+class AnalyzeMilipeed(Milipeed):
+    '''GLM MILIPEED links discriminated by age, sex, BMI, FEV and PY.'''
+    def __init__(self,input_path,gene_subset,mili_nets='/udd/redmo/analyses/MILIPEED/mili_subj.txt',links_file='/udd/redmo/analyses/MILIPEED/milipeed_links.txt',meta='/udd/redmo/analyses/MILIPEED/subj_metadata.txt',outdir='.'):
+    # def __init__(self,input_path,gene_subset,omili_nets,links_file,meta,utdir='.',):
+        '''Load variables from Milipeed.'''
+        self.metadata = pd.read_csv(meta,sep='\t',header=0,index_col=0)
+        subjmeta = pd.read_csv(mili_nets,sep='\t',names=['subj'],index_col=0)
+        self.metadata=self.metadata.merge(subjmeta,left_on=self.metadata.index,right_on=subjmeta.index)
+        total_links=pd.read_csv(links_file,sep='\t',names=['TF','gene'])
+
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         # metadata.columns=['ID','age','sex','BMI','FEV','PY']
         ##can include categorizations of variables as well, such as defining COPD/not and binning ages, hoever, then you will want to 
         # metadata['COPD'] = np.where(metadata['FEV']>.7, 'COPD', 'NO')
         # metadata['age_range'] = np.where(metadata['age']<50, 'fourties', np.where(metadata['age']<60,'fifties',np.where(metadata['age']<70,'sixties',np.where(metadata['age']<80,'seventies','eighties'))))
         # metadata.set_index('ID', inplace=True)
         # metadata.reindex(subjects) ##if theyve been sorted since extraction
+<<<<<<< HEAD
+=======
+
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         
         # path=self.save_dir
         self.path=input_path
         self.outdir=outdir
+<<<<<<< HEAD
         # for fname in os.listdir(input_path):
         #     if fname.endswith('.txt'):
         #         traces= glob.glob(input_path+'/*.txt')
@@ -46,6 +72,9 @@ class AnalyzeMilipeed(Lioness):
         #         traces= glob.glob(input_path+'/*.npy')
         
 
+=======
+        traces= os.listdir(input_path)
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         # if traces[1].endswith('npy'):
         #     append_data = pd.DataFrame()
         #     for j,trace in enumerate(traces):
@@ -66,6 +95,7 @@ class AnalyzeMilipeed(Lioness):
 
         # elif gene_subset is not None:
         append_data = pd.DataFrame()
+<<<<<<< HEAD
 
             # filepath = os.path.join(input_path, trace)
         if input_path is None:
@@ -95,14 +125,32 @@ class AnalyzeMilipeed(Lioness):
         
         tmp=total_links
 
+=======
+        gene_sub=pd.read_csv(gene_subset,sep='\t',names=['gene'])
+        for j,trace in enumerate(traces):
+            filepath = os.path.join(input_path, trace)
+            data=pd.DataFrame(pd.read_csv(filepath,sep='\t',header=None,index_col=None))
+            data.index=total_links['gene']
+            subnet=data.merge(gene_sub,left_on=data.index,right_on='gene')
+
+            append_data=pd.concat([append_data,pd.DataFrame(subnet[0])],sort=True,axis=1)
+            # self.append_data=self.append_data.T
+            # tmp=pd.DataFrame(pd.read_csv(links_file,header=None,index_col=None, skiprows=i*2500, nrows=2500))                
+            # tmp=pd.read_csv(links_file,sep='\t',header=None,dtype=str,index_col=None, skiprows=i*2500, nrows=2500)
+        tmp=total_links.merge(gene_sub)
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         tmp['TF']=tmp['TF'].str.replace('-','')
         tmp['gene']=tmp['gene'].str.replace('-','')
         append_data=append_data.T
         append_data.index=self.metadata.index
         append_data.columns=tmp['TF']+"_"+tmp['gene']
         self.population=self.metadata.merge(append_data,left_index=True,right_index=True)
+<<<<<<< HEAD
         # self.population=self.population.round({'age':0})
         ### remove age as categorical and use as continuous
+=======
+        self.population=self.population.round({'age':0})
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
         # if self.population['age'] is not object: ##convert 
             # self.population['age']=self.population['age'].astype(object)
         self.date="{:%d.%m.%Y}".format(datetime.now())
@@ -149,6 +197,7 @@ class AnalyzeMilipeed(Lioness):
         #         self.milipeed_analysis=self.__analysis_loop()
                
 
+<<<<<<< HEAD
     def iLiM(self,gene,computation):
         self.population[gene]=pd.to_numeric(self.population[gene])
         # fmla = (gene+"~ age+ PY+ FEV+sex")
@@ -164,6 +213,15 @@ class AnalyzeMilipeed(Lioness):
         elif computing=='gpu':
             mlr = LinearRegression()
             mlr.fit(self.population[self.covar], self.population[gene])
+=======
+    def iLiM(self,gene):
+        self.population[gene]=pd.to_numeric(self.population[gene])
+        # fmla = (gene+"~ age+ PY+ FEV+sex")
+        fmla = (str(gene) + "~"+self.metadata.columns[1]+"+"+self.metadata.columns[2]+"+"+self.metadata.columns[3]+"+"+self.metadata.columns[4]+"+"+self.metadata.columns[5]) ##restrict metadata input to those for use in GLM
+        ## ^^ make this fill automagically
+        # model = sm.formula.glm(fmla, family=sm.families.Gaussian(),data=self.population[gene]).fit()
+        model = sm.formula.glm(fmla, family=sm.families.Gaussian(),data=self.population[['age','sex','BMI','FEV1','packyears',gene]]).fit()
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
 
         self.results=pd.DataFrame(self.results_summary_to_dataframe(model,gene))  
         return self.results
@@ -191,17 +249,40 @@ class AnalyzeMilipeed(Lioness):
             # count=count+1
         return self.results.T
 
+<<<<<<< HEAD
 
     # def importAnalysis():
     #     analysis=pd.read_csv('/udd/redmo/analyses/SPIDER/lioness_output2mili_analysis08.03.2020.txt',sep='\t',skiprows=range(3,2500,3),header=0,index_col=0)
+=======
+    def runInParallel(*fns):
+        proc = []
+        for fn in fns:
+            p = Process(target=fn)
+            p.start()
+            proc.append(p)
+        for p in proc:
+            p.join()
+
+    def importAnalysis():
+        analysis=pd.read_csv('/udd/redmo/analyses/SPIDER/lioness_output2mili_analysis08.03.2020.txt',sep='\t',skiprows=range(3,2500,3),header=0,index_col=0)
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
 
 
 ## still working on
 
+<<<<<<< HEAD
     # def top_network_plot(self, column = 0, top = 100, file = 'milipeed_top_100.png'):
     #     '''Select top genes.'''
     #     self.export_panda_results[['force']] = self.milipeed_results.iloc[:,column]
     #     plot = AnalyzePanda(self)
     #     plot.top_network_plot(top, file)
     #     return None
+=======
+    def top_network_plot(self, column = 0, top = 100, file = 'milipeed_top_100.png'):
+        '''Select top genes.'''
+        self.export_panda_results[['force']] = self.milipeed_results.iloc[:,column]
+        plot = AnalyzePanda(self)
+        plot.top_network_plot(top, file)
+        return None
+>>>>>>> 87f12e8f349843c70820ae5a55188747d0153ef6
 
