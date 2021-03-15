@@ -178,7 +178,7 @@ class Analyzemilipede_delta(milipede):
         metadata.index=metadata['fulltopmedId']
 
         append_data=metadata.merge(population,left_index=True,right_index=True)
-        del append_data['fulltopmedId'], append_data['topmedId'], append_data['patid'], append_data['Project']
+        del append_data['fulltopmedId']#, append_data['topmedId'], append_data['patid'], append_data['Project']
 
         for counts,gene in enumerate(tmp['gene']): #tmp['gene']:
             if type(covar) is list:

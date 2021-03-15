@@ -173,7 +173,7 @@ class Analyzemilipede_gamma(milipede):
 
 #         if (gene_subset is None) or (type(gene_subset) is str and results is None):
 #             try:
-        print(gene)
+        # print(gene)
         if population.shape[1]>1:
             append_data=metadata.merge(population[gene],left_index=True,right_index=True)
         else:
@@ -228,9 +228,8 @@ class Analyzemilipede_gamma(milipede):
 #                 results.T.to_csv(os.path.join(out+"_milipede_analysis_"+date+".txt"),sep='\t',mode='a',header=False)
 #             except:
 #                 pass
-        if (count+1/100).is_integer():
-        # print("determining diff links for:"+ gene+", no.:"+count)
-            print(count)
+        if (count/10000).is_integer():
+                print(count/len(total_links))
 
         return np.transpose(results)
 
