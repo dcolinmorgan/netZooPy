@@ -35,7 +35,7 @@ Analyzemilipede_gamma('data/LTRC/bLTRC_b_funnorm_lbk.txt',covar=['gender','clinC
 
 """
 
-class AnalyzeMilipede_gamma(milipede):
+class AnalyzeMilipede_gamma(Milipede):
     '''GLM milipede links discriminated by age, sex, BMI, FEV and PY.'''
     def __init__(self,data_file,gene_subset=None,covar='age',factor_file='analyses/milipede/milipede_links.txt',meta='analyses/milipede/subj_metadata.txt',out='.',computation='cpu',n_cores=1):
     # def __init__(self,input_path,gene_subset,omili_nets,links_file,meta,utdir='.',):
