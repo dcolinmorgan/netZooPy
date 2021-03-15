@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys, os, glob,re 
 # sys.path.insert(1,'../panda')
 # from netZooPy.panda.panda import Panda
-from .milipede import milipede
+from .milipede import Milipede
 # from netZooPy.panda.analyze_panda import AnalyzePanda
 import numpy as np
 import collections
