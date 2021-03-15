@@ -10,7 +10,7 @@ from netZooPy.panda.panda import Panda
 # import cupy as cp
 # xp=np.get_array_module
 
-class milipede(Panda):
+class Milipede(Panda):
     """
     Description:
        Using milipede to infer single-sample gene regulatory networks.
